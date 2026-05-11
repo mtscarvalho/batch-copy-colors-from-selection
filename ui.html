@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+  <body>
+    <div class="form" id="message">
+      <label class="form__label" for="format">Copy format</label>
+      <select class="form__select" id="format">
+        <option value="hex">HEX</option>
+        <option value="rgb">RGB</option>
+      </select>
+    </div>
+    <div class="colors" id="colors"></div>
+    <button class="button" id="copy">
+      <span class="button__icon" id="copy-icon"></span>
+      <span>Copy colors</span>
+    </button>
+
+    <style>
+      body {
+        color: #171717;
+        padding: 16px 10px;
+
+        display: flex;
+        flex-direction: column;
+        font-family: Inter, sans-serif;
+      }
+
+      .form__label {
+        display: block;
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+
+      .form__select {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e5e5e5;
+        cursor: pointer;
+        margin-bottom: 16px;
+        padding: 10px;
+        width: 100%;
+      }
+
+      .colors {
+        padding-bottom: 40px;
+      }
+
+      .color {
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        padding: 12px;
+
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .color__swatch {
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+      }
+
+      .color__info {
+        flex: 1;
+      }
+
+      .color__info__hex {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .copy-single {
+        background: white;
+        border-radius: 10px;
+        border: 1px solid #e5e5e5;
+        color: #171717;
+
+        padding: 0;
+        margin: 0;
+        width: 40px;
+        height: 40px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .copy-single svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .button {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        background: #4f46e5;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .button__icon svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .button__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+
+    <script>
+      let colorList = [];
+
+      const colorsEl = document.getElementById("colors");
+      const messageEl = document.getElementById("message");
+      const copyBtn = document.getElementById("copy");
+      const formatSelect = document.getElementById("format");
+      const copyIconEl = document.getElementById("copy-icon");
+
+      const copyIcon = `
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect width="14" height="14" x="8" y="8" rx="2"></rect>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+        </svg>
+      `;
+
+      const checkIcon = `
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+      `;
+
+      copyIconEl.innerHTML = copyIcon;
+
+      function copyText(text, button, iconElement) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        iconElement.innerHTML = checkIcon;
+
+        setTimeout(() => {
+          iconElement.innerHTML = copyIcon;
+        }, 1500);
+      }
+
+      onmessage = (event) => {
+        const msg = event.data.pluginMessage;
+
+        if (msg.type === "error") {
+          messageEl.textContent = msg.message;
+          copyBtn.style.display = "none";
+        }
+
+        if (msg.type === "colors") {
+          colorList = msg.colors;
+
+          if (colorList.length === 0) {
+            messageEl.textContent = "No solid colors found in this frame.";
+            copyBtn.style.display = "none";
+            return;
+          }
+
+          colorsEl.innerHTML = colorList
+            .map(
+              (color, index) => `
+                <div class="color">
+                  <div
+                    class="color__swatch"
+                    style="background:${color.hex}"
+                  ></div>
+
+                  <div class="color__info">
+                    <div class="color__info__hex">${color.hex}</div>
+                    <div class="color__info__hex">${color.rgb}</div>
+                  </div>
+
+                  <button
+                    class="copy-single"
+                    data-index="${index}"
+                    title="Copy color"
+                  >
+                    <span class="single-icon">
+                      ${copyIcon}
+                    </span>
+                  </button>
+                </div>
+              `,
+            )
+            .join("");
+        }
+      };
+
+      colorsEl.addEventListener("click", (event) => {
+        const button = event.target.closest(".copy-single");
+
+        if (!button) return;
+        const index = button.dataset.index;
+        const selectedFormat = formatSelect.value;
+        const color = colorList[index];
+        const iconElement = button.querySelector(".single-icon");
+
+        copyText(color[selectedFormat], button, iconElement);
+      });
+
+      copyBtn.onclick = () => {
+        const selectedFormat = formatSelect.value;
+        const text = colorList.map((color) => color[selectedFormat]).join("\n");
+        copyText(text, copyBtn, copyIconEl);
+      };
+    </script>
+  </body>
+</html>
