@@ -57,7 +57,8 @@ function updateColors() {
   if (selection.length === 0) {
     figma.ui.postMessage({
       type: "error",
-      message: "Please select at least one layer.",
+      message:
+        "Select at least one frame, group or shape before running the plugin.",
     });
     return;
   }
