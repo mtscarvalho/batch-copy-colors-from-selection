@@ -1,5 +1,5 @@
 {
-  "name": "Copy color from frame",
+  "name": "Batch copy colors from selection",
   "id": "1635751826078322946",
   "api": "1.0.0",
   "main": "code.js",

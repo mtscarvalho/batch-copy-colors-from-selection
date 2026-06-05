@@ -8,7 +8,9 @@
         <option value="rgb">RGB</option>
       </select>
     </div>
+
     <div class="colors" id="colors"></div>
+
     <button class="button" id="copy">
       <span class="button__icon" id="copy-icon"></span>
       <span>Copy colors</span>
@@ -18,7 +20,6 @@
       body {
         color: #171717;
         padding: 16px 10px;
-
         display: flex;
         flex-direction: column;
         font-family: Inter, sans-serif;
@@ -49,7 +50,6 @@
         border-radius: 12px;
         margin-bottom: 10px;
         padding: 12px;
-
         display: flex;
         align-items: center;
         gap: 12px;
@@ -77,19 +77,18 @@
         border-radius: 10px;
         border: 1px solid #e5e5e5;
         color: #171717;
-
         padding: 0;
         margin: 0;
         width: 40px;
         height: 40px;
-
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
       }
 
-      .copy-single svg {
+      .copy-single svg,
+      .button__icon svg {
         width: 18px;
         height: 18px;
       }
@@ -99,7 +98,6 @@
         bottom: 16px;
         left: 16px;
         right: 16px;
-
         padding: 14px;
         border: none;
         border-radius: 12px;
@@ -107,16 +105,10 @@
         color: white;
         font-weight: 600;
         cursor: pointer;
-
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
-      }
-
-      .button__icon svg {
-        width: 18px;
-        height: 18px;
       }
 
       .button__icon {
@@ -132,34 +124,19 @@
       const colorsEl = document.getElementById("colors");
       const messageEl = document.getElementById("message");
       const copyBtn = document.getElementById("copy");
-      const formatSelect = document.getElementById("format");
       const copyIconEl = document.getElementById("copy-icon");
 
       const copyIcon = `
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect width="14" height="14" x="8" y="8" rx="2"></rect>
           <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
         </svg>
       `;
 
       const checkIcon = `
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <path d="m9 12 2 2 4-4"></path>
         </svg>
@@ -167,16 +144,32 @@
 
       copyIconEl.innerHTML = copyIcon;
 
-      function copyText(text, button, iconElement) {
+      function getSelectedFormat() {
+        return document.getElementById("format").value;
+      }
+
+      function renderForm() {
+        messageEl.innerHTML = `
+          <label class="form__label" for="format">Copy format</label>
+          <select class="form__select" id="format">
+            <option value="hex">HEX</option>
+            <option value="rgb">RGB</option>
+          </select>
+        `;
+      }
+
+      function copyText(text, iconElement) {
         const textarea = document.createElement("textarea");
         textarea.value = text;
         textarea.style.position = "fixed";
         textarea.style.opacity = "0";
+
         document.body.appendChild(textarea);
         textarea.focus();
         textarea.select();
         document.execCommand("copy");
         document.body.removeChild(textarea);
+
         iconElement.innerHTML = checkIcon;
 
         setTimeout(() => {
@@ -188,41 +181,39 @@
         const msg = event.data.pluginMessage;
 
         if (msg.type === "error") {
+          colorList = [];
+          colorsEl.innerHTML = "";
           messageEl.textContent = msg.message;
           copyBtn.style.display = "none";
+          return;
         }
 
         if (msg.type === "colors") {
           colorList = msg.colors;
+          renderForm();
 
           if (colorList.length === 0) {
-            messageEl.textContent = "No solid colors found in this frame.";
+            messageEl.textContent = "No solid colors found in this selection.";
+            colorsEl.innerHTML = "";
             copyBtn.style.display = "none";
             return;
           }
+
+          copyBtn.style.display = "flex";
 
           colorsEl.innerHTML = colorList
             .map(
               (color, index) => `
                 <div class="color">
-                  <div
-                    class="color__swatch"
-                    style="background:${color.hex}"
-                  ></div>
+                  <div class="color__swatch" style="background:${color.hex}"></div>
 
                   <div class="color__info">
                     <div class="color__info__hex">${color.hex}</div>
                     <div class="color__info__hex">${color.rgb}</div>
                   </div>
 
-                  <button
-                    class="copy-single"
-                    data-index="${index}"
-                    title="Copy color"
-                  >
-                    <span class="single-icon">
-                      ${copyIcon}
-                    </span>
+                  <button class="copy-single" data-index="${index}" title="Copy color">
+                    <span class="single-icon">${copyIcon}</span>
                   </button>
                 </div>
               `,
@@ -233,20 +224,21 @@
 
       colorsEl.addEventListener("click", (event) => {
         const button = event.target.closest(".copy-single");
-
         if (!button) return;
+
         const index = button.dataset.index;
-        const selectedFormat = formatSelect.value;
+        const selectedFormat = getSelectedFormat();
         const color = colorList[index];
         const iconElement = button.querySelector(".single-icon");
 
-        copyText(color[selectedFormat], button, iconElement);
+        copyText(color[selectedFormat], iconElement);
       });
 
       copyBtn.onclick = () => {
-        const selectedFormat = formatSelect.value;
+        const selectedFormat = getSelectedFormat();
         const text = colorList.map((color) => color[selectedFormat]).join("\n");
-        copyText(text, copyBtn, copyIconEl);
+
+        copyText(text, copyIconEl);
       };
     </script>
   </body>

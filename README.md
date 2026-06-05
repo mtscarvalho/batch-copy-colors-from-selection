@@ -1,4 +1,4 @@
-# Copy color from frame
+# Batch copy colors from selection
 
 Quickly extract all color codes used in a selected frame.
 

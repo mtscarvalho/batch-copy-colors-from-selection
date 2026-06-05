@@ -51,14 +51,17 @@ function extractColorsFromSelection(nodes: readonly SceneNode[]): ColorItem[] {
   return Array.from(colors.values());
 }
 
-const selection = figma.currentPage.selection;
+function updateColors() {
+  const selection = figma.currentPage.selection;
 
-if (selection.length === 0) {
-  figma.ui.postMessage({
-    type: "error",
-    message: "Please select at least one layer before running the plugin.",
-  });
-} else {
+  if (selection.length === 0) {
+    figma.ui.postMessage({
+      type: "error",
+      message: "Please select at least one layer.",
+    });
+    return;
+  }
+
   const colors = extractColorsFromSelection(selection);
 
   figma.ui.postMessage({
@@ -66,6 +69,12 @@ if (selection.length === 0) {
     colors,
   });
 }
+
+updateColors();
+
+figma.on("selectionchange", () => {
+  updateColors();
+});
 
 figma.ui.onmessage = (msg) => {
   if (msg.type === "close") {
