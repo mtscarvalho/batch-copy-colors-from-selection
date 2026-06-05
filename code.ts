@@ -7,6 +7,7 @@ type ColorItem = {
 
 function rgbToHex(r: number, g: number, b: number) {
   const to255 = (v: number) => Math.round(v * 255);
+
   return (
     "#" +
     [to255(r), to255(g), to255(b)]
@@ -16,13 +17,13 @@ function rgbToHex(r: number, g: number, b: number) {
   );
 }
 
-function extractColors(node: SceneNode): ColorItem[] {
+function extractColorsFromSelection(nodes: readonly SceneNode[]): ColorItem[] {
   const colors = new Map<string, ColorItem>();
 
   function walk(n: SceneNode) {
     if ("fills" in n && Array.isArray(n.fills)) {
       for (const fill of n.fills) {
-        if (fill.type === "SOLID") {
+        if (fill.type === "SOLID" && fill.visible !== false) {
           const { r, g, b } = fill.color;
           const hex = rgbToHex(r, g, b);
 
@@ -43,19 +44,22 @@ function extractColors(node: SceneNode): ColorItem[] {
     }
   }
 
-  walk(node);
+  for (const node of nodes) {
+    walk(node);
+  }
+
   return Array.from(colors.values());
 }
 
 const selection = figma.currentPage.selection;
 
-if (selection.length !== 1 || selection[0].type !== "FRAME") {
+if (selection.length === 0) {
   figma.ui.postMessage({
     type: "error",
-    message: "Please select one frame before running the plugin.",
+    message: "Please select at least one layer before running the plugin.",
   });
 } else {
-  const colors = extractColors(selection[0]);
+  const colors = extractColorsFromSelection(selection);
 
   figma.ui.postMessage({
     type: "colors",
