@@ -1,17 +1,23 @@
 # Batch copy colors from selection
 
-Quickly extract all color codes used in a selected frame.
+Quickly extract every unique solid fill color from your Figma selection.
+
+Select a **frame, group, component, instance, section, or multiple layers**, and the plugin automatically scans your selection to generate a clean list of unique colors. Switch between **HEX** and **RGB** formats, then copy individual colors or the entire palette with a single click.
+
+Perfect for creating design systems, auditing files, documenting palettes, or sharing colors with developers.
+
+![Batch copy colors from selection](https://i.ibb.co/HfHZvds0/batch-copy-colors-from-selection.png)
 
 ## Features
 
-- Extract multiple colors from any frame
-- Copy HEX color codes instantly
-- Simple and lightweight UI
-- Built with TypeScript
+- 🎨 Extract unique solid fill colors from any selection
+- 📦 Supports frames, groups, components, instances, sections, and multiple layers
+- 🔄 Automatically updates when your selection changes
+- 🔢 View colors in **HEX** or **RGB**
+- 📋 Copy individual colors or the entire palette
+- ⚡ Fast, lightweight, and easy to use
 
----
-
-## Getting Started
+## Getting started
 
 ### 1. Install Node.js
 
@@ -19,19 +25,17 @@ Download and install Node.js (includes NPM):
 
 https://nodejs.org/en/download/
 
----
 
-### 2. Install Dependencies
 
-Open the plugin folder in your terminal and run:
+### 2. Install dependencies
+
+Open the project folder in your terminal and run:
 
 ```bash
 npm install
-```
+````
 
----
-
-### 3. Start Development Mode
+### 3. Start development mode
 
 Run the TypeScript watcher:
 
@@ -39,48 +43,54 @@ Run the TypeScript watcher:
 npm run watch
 ```
 
-This automatically recompiles the plugin whenever you save changes.
+The plugin will automatically recompile whenever you save changes.
 
----
+## Running the plugin in Figma
 
-## Running the Plugin in Figma
-
-1. Open Figma
+1. Open **Figma**
 2. Go to **Plugins → Development → Import Plugin from Manifest**
-3. Select the `manifest.json` file from this project
+3. Select the project's `manifest.json`
 4. Run the plugin from:
-   - **Plugins → Development → Multi Color Extractor**
 
----
+* **Plugins → Development → Multi Color Extractor**
 
-## Project Structure
+## Project structure
 
-```txt
+```text
 ├── code.ts        # Main plugin logic
 ├── code.js        # Compiled JavaScript
-├── ui.html        # Plugin UI
-├── manifest.json  # Figma plugin configuration
+├── ui.html        # Plugin interface
+├── manifest.json  # Plugin configuration
 ├── package.json
 └── tsconfig.json
 ```
 
----
 
-## Development Notes
+## Built with
 
-This plugin uses:
+* TypeScript
+* Figma Plugin API
+* NPM
 
-- TypeScript
-- Figma Plugin API
-- NPM
+## Use Cases
 
-Helpful resources:
+* Creating design systems
+* Auditing existing design files
+* Documenting color palettes
+* Sharing colors with developers
+* Inspecting UI libraries
+* Extracting colors from complex selections
 
-- https://www.figma.com/plugin-docs/
-- https://www.typescriptlang.org/
+## Useful Resources
 
----
+* Figma Plugin API: https://www.figma.com/plugin-docs/
+* TypeScript: https://www.typescriptlang.org/
+
+
 
 ## License
 
 MIT License
+
+```
+```
